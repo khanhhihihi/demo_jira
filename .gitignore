@@ -1,0 +1,17 @@
+## Ignore Visual Studio temporary files and build folders
+.vs/
+[Bb]in/
+[Oo]bj/
+*.user
+
+## Ignore SQLite database (since it is auto-seeded at startup)
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+## User-specific files
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates

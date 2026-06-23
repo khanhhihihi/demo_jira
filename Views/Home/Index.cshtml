@@ -1,0 +1,650 @@
+@{
+    ViewData["Title"] = "Tra cứu Y tế Việt Nhật";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header Section -->
+            <div class="text-center mb-5 header-section">
+                <div class="logo-badge mb-3">🏥</div>
+                <h1 class="display-5 fw-bold text-gradient">Hệ thống Tra cứu Chống chỉ định & Tương tác Thuốc</h1>
+                <p class="text-muted fs-5">Tra cứu an toàn sử dụng thuốc nhanh chóng và chính xác cho bệnh nhân</p>
+            </div>
+
+            <!-- Main Interactive Card -->
+            <div class="card main-card shadow-lg border-0">
+                <div class="card-header bg-transparent border-0 p-0">
+                    <ul class="nav nav-tabs nav-fill custom-tabs" id="medicalTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active py-3 fs-5" id="contra-tab" data-bs-toggle="tab" data-bs-target="#contra-panel" type="button" role="tab" aria-controls="contra-panel" aria-selected="true">
+                                🔍 Tra Cứu Theo Bệnh Nền
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link py-3 fs-5" id="interaction-tab" data-bs-toggle="tab" data-bs-target="#interaction-panel" type="button" role="tab" aria-controls="interaction-panel" aria-selected="false">
+                                ⚡ Kiểm Tra Tương Tác Thuốc
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="card-body p-4 p-md-5">
+                    <div class="tab-content" id="medicalTabContent">
+                        
+                        <!-- TAB 1: CONTRAINDICATIONS BY DISEASE -->
+                        <div class="tab-pane fade show active" id="contra-panel" role="tabpanel" aria-labelledby="contra-tab">
+                            <h3 class="fw-semibold mb-3">Tra cứu thuốc chống chỉ định theo bệnh lý</h3>
+                            <p class="text-muted mb-4">Nhập tên bệnh nền (ví dụ: *Suy gan*, *Viêm loét dạ dày*, *Suy thận*) để kiểm tra xem những loại thuốc nào không được sử dụng hoặc cần lưu ý đặc biệt.</p>
+                            
+                            <div class="search-box-container position-relative mb-4">
+                                <span class="search-icon">🔍</span>
+                                <input type="text" id="diseaseInput" class="form-control form-control-lg custom-input" placeholder="Nhập tên bệnh lý cần tra cứu..." autocomplete="off">
+                                <button class="btn btn-clear" id="clearDisease" type="button" style="display: none;">✕</button>
+                                
+                                <!-- Suggestions Dropdown -->
+                                <ul class="list-group position-absolute w-100 shadow-lg autocomplete-dropdown" id="diseaseSuggestions" style="display: none; z-index: 1050;">
+                                </ul>
+                            </div>
+
+                            <!-- Selected Disease Indicator -->
+                            <div id="selectedDiseaseAlert" class="alert alert-info py-2 px-3 mb-4 align-items-center justify-content-between" style="display: none;">
+                                <span>Đang xem chống chỉ định cho bệnh: <strong id="selectedDiseaseName">...</strong></span>
+                                <button type="button" class="btn-close" id="resetDiseaseSearch" aria-label="Close"></button>
+                            </div>
+
+                            <!-- Results Section -->
+                            <div id="contraResults" class="results-area mt-4">
+                                <div class="text-center text-muted py-5" id="contraPlaceholder">
+                                    <div class="fs-1 mb-3">📋</div>
+                                    <p>Vui lòng nhập và chọn một bệnh lý để hiển thị danh sách cảnh báo thuốc.</p>
+                                </div>
+                                
+                                <div id="contraResultsList" class="row g-3" style="display: none;">
+                                    <!-- Dynamic cards here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB 2: DRUG INTERACTION CHECKER -->
+                        <div class="tab-pane fade" id="interaction-panel" role="tabpanel" aria-labelledby="interaction-tab">
+                            <h3 class="fw-semibold mb-3">Kiểm tra tương tác giữa các loại thuốc</h3>
+                            <p class="text-muted mb-4">Thêm hai hoặc nhiều loại thuốc (ví dụ: *Ibuprofen*, *Aspirin*, *Paracetamol*) vào danh sách để kiểm tra xem chúng có phản ứng bất lợi khi dùng cùng lúc hay không.</p>
+                            
+                            <div class="search-box-container position-relative mb-4">
+                                <span class="search-icon">💊</span>
+                                <input type="text" id="drugInput" class="form-control form-control-lg custom-input" placeholder="Tìm kiếm và chọn thuốc để thêm vào danh sách..." autocomplete="off">
+                                
+                                <!-- Suggestions Dropdown -->
+                                <ul class="list-group position-absolute w-100 shadow-lg autocomplete-dropdown" id="drugSuggestions" style="display: none; z-index: 1050;">
+                                </ul>
+                            </div>
+
+                            <!-- Selected Drugs Tags -->
+                            <div class="mb-4">
+                                <h5 class="fw-semibold text-secondary mb-3">Danh sách thuốc đã chọn (<span id="drugCount">0</span>)</h5>
+                                <div class="d-flex flex-wrap gap-2 min-height-tags border rounded p-3 bg-light" id="selectedDrugsContainer">
+                                    <span class="text-muted fs-6 py-1" id="noDrugsSelected">Chưa có thuốc nào được chọn. Hãy thêm thuốc ở ô tìm kiếm phía trên.</span>
+                                </div>
+                            </div>
+
+                            <div class="text-center mb-4">
+                                <button class="btn btn-primary btn-lg px-5 shadow-sm fw-semibold" id="checkInteractionsBtn" disabled>
+                                    ⚡ Kiểm Tra Tương Tác
+                                </button>
+                            </div>
+
+                            <!-- Interaction Results Section -->
+                            <div id="interactionResults" class="results-area mt-4">
+                                <!-- Placeholders & Alerts will be inserted here dynamically -->
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Premium CSS Styles -->
+<style>
+    /* Gradient Text & Styling */
+    .text-gradient {
+        background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .logo-badge {
+        font-size: 3rem;
+        display: inline-block;
+        animation: pulse 2s infinite;
+    }
+
+    @@keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    .header-section {
+        max-width: 650px;
+        margin: 0 auto;
+    }
+
+    /* Main Card Customization */
+    .main-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: 1.25rem;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+
+    /* Custom Navigation Tabs */
+    .custom-tabs {
+        border-bottom: 2px solid #e9ecef;
+        background-color: #f8f9fa;
+    }
+
+    .custom-tabs .nav-link {
+        color: #6c757d;
+        font-weight: 600;
+        border: none;
+        border-bottom: 3px solid transparent;
+        border-radius: 0;
+        transition: all 0.2s ease;
+    }
+
+    .custom-tabs .nav-link:hover {
+        background-color: rgba(13, 110, 253, 0.05);
+        color: #0d6efd;
+    }
+
+    .custom-tabs .nav-link.active {
+        color: #0d6efd;
+        background-color: #fff;
+        border-bottom-color: #0d6efd;
+        box-shadow: 0 4px 6px -4px rgba(13, 110, 253, 0.2);
+    }
+
+    /* Custom Inputs */
+    .custom-input {
+        padding-left: 3rem;
+        padding-right: 3rem;
+        border-radius: 0.75rem;
+        border: 2px solid #dee2e6;
+        transition: all 0.2s ease;
+    }
+
+    .custom-input:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 1.25rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.25rem;
+        color: #6c757d;
+        pointer-events: none;
+    }
+
+    .btn-clear {
+        position: absolute;
+        right: 1.25rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #6c757d;
+        font-size: 1.1rem;
+        padding: 0;
+        line-height: 1;
+    }
+
+    .btn-clear:hover {
+        color: #dc3545;
+    }
+
+    /* Autocomplete Suggestions */
+    .autocomplete-dropdown {
+        border-radius: 0.75rem;
+        margin-top: 5px;
+        overflow: hidden;
+        border: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .autocomplete-dropdown .list-group-item-action {
+        padding: 0.75rem 1.25rem;
+        transition: all 0.15s ease;
+        border-left: 4px solid transparent;
+    }
+
+    .autocomplete-dropdown .list-group-item-action:hover {
+        background-color: #f1f8ff;
+        border-left-color: #0d6efd;
+    }
+
+    /* Tag Styling */
+    .min-height-tags {
+        min-height: 70px;
+        display: flex;
+        align-items: center;
+    }
+
+    .drug-tag {
+        display: inline-flex;
+        align-items: center;
+        background-color: #e7f1ff;
+        color: #0d6efd;
+        font-weight: 600;
+        padding: 0.4rem 0.8rem;
+        border-radius: 2rem;
+        font-size: 0.9rem;
+        border: 1px solid #b3d7ff;
+        box-shadow: 0 2px 4px rgba(13,110,253,0.05);
+        animation: fadeIn 0.2s ease;
+    }
+
+    .drug-tag .btn-remove-tag {
+        background: none;
+        border: none;
+        color: #0d6efd;
+        margin-left: 0.5rem;
+        font-size: 1rem;
+        padding: 0;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .drug-tag .btn-remove-tag:hover {
+        color: #dc3545;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    /* Contraindication Result Card */
+    .contra-card {
+        border-left: 5px solid #6c757d;
+        transition: all 0.2s ease;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .contra-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .contra-card.danger {
+        border-left-color: #dc3545;
+        background-color: #fffdfd;
+    }
+
+    .contra-card.warning {
+        border-left-color: #ffc107;
+        background-color: #fffffb;
+    }
+
+    /* Badge Customization */
+    .badge-pill {
+        padding: 0.35em 0.8em;
+        border-radius: 10rem;
+        font-weight: 600;
+    }
+
+    .badge-danger-light {
+        background-color: #f8d7da;
+        color: #842029;
+    }
+
+    .badge-warning-light {
+        background-color: #fff3cd;
+        color: #664d03;
+    }
+</style>
+
+<!-- JavaScript Core Logic -->
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // State variables
+            let selectedDisease = null;
+            let selectedDrugs = [];
+
+            // --- TAB 1: DISEASE CONTRAINDICATIONS LOGIC ---
+            const diseaseInput = document.getElementById("diseaseInput");
+            const diseaseSuggestions = document.getElementById("diseaseSuggestions");
+            const clearDiseaseBtn = document.getElementById("clearDisease");
+            const selectedDiseaseAlert = document.getElementById("selectedDiseaseAlert");
+            const selectedDiseaseName = document.getElementById("selectedDiseaseName");
+            const resetDiseaseSearch = document.getElementById("resetDiseaseSearch");
+            const contraPlaceholder = document.getElementById("contraPlaceholder");
+            const contraResultsList = document.getElementById("contraResultsList");
+
+            // Handle typing in Disease Autocomplete
+            diseaseInput.addEventListener("input", function () {
+                const query = this.value.trim();
+                if (query.length === 0) {
+                    diseaseSuggestions.style.display = "none";
+                    clearDiseaseBtn.style.display = "none";
+                    return;
+                }
+                clearDiseaseBtn.style.display = "block";
+
+                // Call API Autocomplete
+                fetch(`/api/search/autocomplete?term=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Filter only diseases
+                        const diseases = data.filter(item => item.type === "disease");
+                        
+                        if (diseases.length === 0) {
+                            diseaseSuggestions.innerHTML = '<div class="list-group-item text-muted">Không tìm thấy bệnh nền phù hợp.</div>';
+                        } else {
+                            diseaseSuggestions.innerHTML = diseases.map(item => `
+                                <button type="button" class="list-group-item list-group-item-action" data-id="${item.id}" data-name="${item.name}">
+                                    🤒 <strong>${item.name}</strong>
+                                </button>
+                            `).join('');
+                        }
+                        diseaseSuggestions.style.display = "block";
+                    })
+                    .catch(err => console.error("Error fetching autocomplete:", err));
+            });
+
+            // Handle selecting a disease from dropdown
+            diseaseSuggestions.addEventListener("click", function (e) {
+                const btn = e.target.closest("button");
+                if (!btn) return;
+
+                const diseaseId = parseInt(btn.getAttribute("data-id"));
+                const name = btn.getAttribute("data-name");
+
+                selectDisease(diseaseId, name);
+            });
+
+            // Selection function
+            function selectDisease(id, name) {
+                selectedDisease = { id, name };
+                diseaseInput.value = "";
+                diseaseSuggestions.style.display = "none";
+                clearDiseaseBtn.style.display = "none";
+
+                // Show selected indicator
+                selectedDiseaseName.textContent = name;
+                selectedDiseaseAlert.style.display = "flex";
+                diseaseInput.style.display = "none";
+
+                // Fetch contraindications
+                fetch(`/api/search/contraindications?diseaseId=${id}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        displayContraindications(data);
+                    })
+                    .catch(err => {
+                        console.error("Error fetching contraindications:", err);
+                        contraResultsList.innerHTML = '<div class="col-12 text-center text-danger py-4">Có lỗi xảy ra khi tải dữ liệu.</div>';
+                    });
+            }
+
+            // Display results
+            function displayContraindications(data) {
+                contraPlaceholder.style.display = "none";
+                contraResultsList.style.display = "flex";
+
+                if (data.length === 0) {
+                    contraResultsList.innerHTML = `
+                        <div class="col-12 text-center py-5">
+                            <div class="fs-1 text-success mb-3">✅</div>
+                            <h4 class="fw-semibold text-success">An toàn!</h4>
+                            <p class="text-muted">Không có thuốc nào trong cơ sở dữ liệu chống chỉ định với bệnh lý này.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                contraResultsList.innerHTML = data.map(item => {
+                    const isDanger = item.warningLevel === "Nguy hiểm";
+                    const cardClass = isDanger ? "danger" : "warning";
+                    const badgeClass = isDanger ? "badge-danger-light" : "badge-warning-light";
+                    const icon = isDanger ? "❌" : "⚠️";
+
+                    return `
+                        <div class="col-12">
+                            <div class="card contra-card ${cardClass} border-0 p-3">
+                                <div class="d-md-flex align-items-center justify-content-between mb-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="fs-4">${icon}</span>
+                                        <h5 class="fw-bold mb-0">${item.drugName}</h5>
+                                    </div>
+                                    <span class="badge ${badgeClass} badge-pill mt-2 mt-md-0">${item.warningLevel}</span>
+                                </div>
+                                <div class="ps-md-4">
+                                    <p class="mb-1 text-secondary"><strong>Hoạt chất:</strong> ${item.activeIngredient || 'Chưa cập nhật'}</p>
+                                    <p class="mb-0 text-muted">${item.description || 'Không có mô tả chi tiết'}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Reset disease search
+            resetDiseaseSearch.addEventListener("click", function () {
+                selectedDisease = null;
+                selectedDiseaseAlert.style.display = "none";
+                diseaseInput.style.display = "block";
+                diseaseInput.value = "";
+                diseaseInput.focus();
+                
+                contraPlaceholder.style.display = "block";
+                contraResultsList.style.display = "none";
+                contraResultsList.innerHTML = "";
+            });
+
+            // Clear disease text input
+            clearDiseaseBtn.addEventListener("click", function () {
+                diseaseInput.value = "";
+                diseaseSuggestions.style.display = "none";
+                this.style.display = "none";
+                diseaseInput.focus();
+            });
+
+            // Close dropdowns on outside click
+            document.addEventListener("click", function (e) {
+                if (!diseaseInput.contains(e.target) && !diseaseSuggestions.contains(e.target)) {
+                    diseaseSuggestions.style.display = "none";
+                }
+                if (!drugInput.contains(e.target) && !drugSuggestions.contains(e.target)) {
+                    drugSuggestions.style.display = "none";
+                }
+            });
+
+
+            // --- TAB 2: DRUG INTERACTION CHECKER LOGIC ---
+            const drugInput = document.getElementById("drugInput");
+            const drugSuggestions = document.getElementById("drugSuggestions");
+            const selectedDrugsContainer = document.getElementById("selectedDrugsContainer");
+            const noDrugsSelected = document.getElementById("noDrugsSelected");
+            const drugCount = document.getElementById("drugCount");
+            const checkInteractionsBtn = document.getElementById("checkInteractionsBtn");
+            const interactionResults = document.getElementById("interactionResults");
+
+            // Handle typing in Drug Autocomplete
+            drugInput.addEventListener("input", function () {
+                const query = this.value.trim();
+                if (query.length === 0) {
+                    drugSuggestions.style.display = "none";
+                    return;
+                }
+
+                // Call API
+                fetch(`/api/search/autocomplete?term=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Filter only drugs
+                        const drugs = data.filter(item => item.type === "drug");
+
+                        if (drugs.length === 0) {
+                            drugSuggestions.innerHTML = '<div class="list-group-item text-muted">Không tìm thấy loại thuốc này.</div>';
+                        } else {
+                            // Exclude drugs already selected
+                            const filtered = drugs.filter(d => !selectedDrugs.some(sd => sd.id === d.id));
+                            if (filtered.length === 0) {
+                                drugSuggestions.innerHTML = '<div class="list-group-item text-muted">Thuốc đã được thêm vào danh sách.</div>';
+                            } else {
+                                drugSuggestions.innerHTML = filtered.map(item => `
+                                    <button type="button" class="list-group-item list-group-item-action" data-id="${item.id}" data-name="${item.name}">
+                                        💊 <strong>${item.name}</strong>
+                                    </button>
+                                `).join('');
+                            }
+                        }
+                        drugSuggestions.style.display = "block";
+                    })
+                    .catch(err => console.error("Error fetching drug autocomplete:", err));
+            });
+
+            // Handle selecting drug from dropdown
+            drugSuggestions.addEventListener("click", function (e) {
+                const btn = e.target.closest("button");
+                if (!btn) return;
+
+                const id = parseInt(btn.getAttribute("data-id"));
+                const name = btn.getAttribute("data-name");
+
+                addDrugTag(id, name);
+                drugInput.value = "";
+                drugSuggestions.style.display = "none";
+                drugInput.focus();
+            });
+
+            // Add drug tag
+            function addDrugTag(id, name) {
+                if (selectedDrugs.some(d => d.id === id)) return;
+
+                selectedDrugs.push({ id, name });
+                updateDrugTagsUI();
+            }
+
+            // Remove drug tag
+            selectedDrugsContainer.addEventListener("click", function (e) {
+                const removeBtn = e.target.closest(".btn-remove-tag");
+                if (!removeBtn) return;
+
+                const id = parseInt(removeBtn.getAttribute("data-id"));
+                selectedDrugs = selectedDrugs.filter(d => d.id !== id);
+                updateDrugTagsUI();
+            });
+
+            // Update selected drugs UI
+            function updateDrugTagsUI() {
+                drugCount.textContent = selectedDrugs.length;
+
+                if (selectedDrugs.length === 0) {
+                    noDrugsSelected.style.display = "block";
+                    checkInteractionsBtn.disabled = true;
+                    // Clear tag elements except the placeholder
+                    const tags = selectedDrugsContainer.querySelectorAll(".drug-tag");
+                    tags.forEach(t => t.remove());
+                } else {
+                    noDrugsSelected.style.display = "none";
+                    checkInteractionsBtn.disabled = selectedDrugs.length < 2;
+
+                    // Rebuild tag elements
+                    const tagsHTML = selectedDrugs.map(d => `
+                        <span class="drug-tag">
+                            💊 ${d.name}
+                            <button type="button" class="btn-remove-tag" data-id="${d.id}" title="Xóa">✕</button>
+                        </span>
+                    `).join('');
+                    
+                    // Remove existing tags
+                    const oldTags = selectedDrugsContainer.querySelectorAll(".drug-tag");
+                    oldTags.forEach(t => t.remove());
+
+                    // Insert new tags
+                    noDrugsSelected.insertAdjacentHTML('afterend', tagsHTML);
+                }
+            }
+
+            // Handle interaction check request
+            checkInteractionsBtn.addEventListener("click", function () {
+                if (selectedDrugs.length < 2) return;
+
+                // Show loading
+                interactionResults.innerHTML = `
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="text-muted mt-3">Đang tính toán tương tác chéo giữa ${selectedDrugs.length} loại thuốc...</p>
+                    </div>
+                `;
+
+                const drugIds = selectedDrugs.map(d => d.id);
+
+                fetch('/api/search/check-interactions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(drugIds)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    displayInteractions(data);
+                })
+                .catch(err => {
+                    console.error("Error checking interactions:", err);
+                    interactionResults.innerHTML = '<div class="alert alert-danger">Có lỗi xảy ra khi kiểm tra tương tác thuốc.</div>';
+                });
+            });
+
+            // Display interactions
+            function displayInteractions(data) {
+                if (data.length === 0) {
+                    interactionResults.innerHTML = `
+                        <div class="card border-success bg-success-light p-4 text-center">
+                            <div class="fs-1 text-success mb-2">💚</div>
+                            <h4 class="fw-bold text-success">An toàn! Không phát hiện tương tác nguy hiểm</h4>
+                            <p class="text-muted mb-0">Các thuốc đã chọn không có tương tác bất lợi nào được ghi nhận trong cơ sở dữ liệu khi sử dụng đồng thời.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const listHTML = data.map(item => `
+                    <div class="card border-warning mb-3 shadow-sm border-0 border-start border-5 border-warning bg-light p-3">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="fs-4">⚠️</span>
+                                <h5 class="fw-bold text-warning-dark mb-0">${item.drugAName} <span class="text-muted">tương tác với</span> ${item.drugBName}</h5>
+                            </div>
+                            <span class="badge bg-warning text-dark badge-pill">${item.warningLevel}</span>
+                        </div>
+                        <div class="ps-md-4 mt-2">
+                            <p class="mb-0 text-muted"><strong>Mô tả lâm sàng:</strong> ${item.description || 'Chưa cập nhật chi tiết lâm nghiệp.'}</p>
+                        </div>
+                    </div>
+                `).join('');
+
+                interactionResults.innerHTML = `
+                    <div class="alert alert-warning py-3 px-4 mb-4">
+                        <h5 class="alert-heading fw-bold">⚠️ Phát hiện tương tác chéo!</h5>
+                        <p class="mb-0">Có <strong>${data.length}</strong> trường hợp tương tác thuốc được ghi nhận trong danh sách của bạn. Vui lòng xem kỹ mô tả bên dưới.</p>
+                    </div>
+                    ${listHTML}
+                `;
+            }
+        });
+    </script>
+}
