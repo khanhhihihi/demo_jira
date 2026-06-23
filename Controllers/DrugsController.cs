@@ -1,3 +1,5 @@
+
+// Task 2 & 6: Tương tác thuốc và Lịch sử tra cứu - Thực hiện bởi Thành viên A(Tiền)
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VietNhatHospital.Data;
