@@ -1,3 +1,4 @@
+// Task 4 & 5: Hệ thống xác thực và Trang quản trị Admin - Thực hiện bởi Thành viên C
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using VietNhatHospital.Models;
