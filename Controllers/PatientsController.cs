@@ -1,3 +1,4 @@
+// Task 3: Quản lý thông tin hồ sơ và bệnh nền bệnh nhân - Thực hiện bởi Thành viên B
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
